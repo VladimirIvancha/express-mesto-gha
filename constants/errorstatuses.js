@@ -4,6 +4,7 @@ const errorstatuses = {
   badRequest: 400,
   notFound: 404,
   defaultError: 500,
+  conflictError: 409,
 };
 
 module.exports = errorstatuses;

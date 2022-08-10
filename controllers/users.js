@@ -5,13 +5,8 @@ const {
   badRequest,
   notFound,
   defaultError,
+  conflictError,
 } = require('../constants/errorstatuses');
-
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
-};
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -25,8 +20,12 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.status(created).send(user))
     .catch((err) => {
+      if (err.code === 11000) {
+        res.status(conflictError).send({ message: 'Этот email уже занят' });
+        return;
+      }
       if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Переданы некорректные данные' });
+        res.status(badRequest).send({ message: 'Переданы некорректные данные для создания пользователя' });
         return;
       }
       res.status(defaultError).send({ message: 'Произошла ошибка' });
