@@ -1,27 +1,23 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const router = require('./routes');
+const handleErrors = require('./errors/handleErrors');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, LOCALHOST = 'mongodb://localhost:27017/mestodb' } = process.env;
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {
+mongoose.connect(LOCALHOST, {
   useNewUrlParser: true,
 });
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '62f2cd7ee9794e40ac059acf',
-  };
-
-  next();
-});
-
 app.use(router);
+router.use(errors());
+app.use(handleErrors);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
