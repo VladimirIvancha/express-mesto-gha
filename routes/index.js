@@ -8,6 +8,7 @@ const NotFoundError = require('../errors/NotFoundErr');
 
 const {
   ok,
+  NotFoundPageErrMessage,
 } = require('../constants/errorstatuses');
 
 router.get('/', (req, res) => {
@@ -44,7 +45,7 @@ router.use(auth);
 router.use('/users', userRouter);
 router.use('/cards', cardRouter);
 router.use('*', (req, res, next) => {
-  next(new NotFoundError('Страница не найдена'));
+  next(new NotFoundError(NotFoundPageErrMessage));
 });
 
 module.exports = router;

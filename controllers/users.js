@@ -9,6 +9,10 @@ const ConflictErr = require('../errors/ConflictErr');
 const {
   ok,
   created,
+  BadReqErrMessage,
+  NotFoundUserErrMessage,
+  ConflictErrMessage,
+  UnAuthorizedErrMessage,
 } = require('../constants/errorstatuses');
 
 module.exports.getUsers = (req, res, next) => {
@@ -44,7 +48,7 @@ module.exports.createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.code === 11000) {
-        next(new ConflictErr('Пользователь с таким Email уже существует'));
+        next(new ConflictErr(ConflictErrMessage));
         return;
       }
       next(err);
@@ -53,13 +57,13 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail(new NotFoundError('Пользователь не найден'))
+    .orFail(new NotFoundError(NotFoundUserErrMessage))
     .then((user) => {
       res.status(ok).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
@@ -70,13 +74,13 @@ module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .orFail(new NotFoundError('Пользователь не найден'))
+    .orFail(new NotFoundError(NotFoundUserErrMessage))
     .then((user) => {
       res.status(ok).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
@@ -87,13 +91,13 @@ module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .orFail(new NotFoundError('Пользователь не найден'))
+    .orFail(new NotFoundError(NotFoundUserErrMessage))
     .then((user) => {
       res.status(ok).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
@@ -109,6 +113,6 @@ module.exports.login = (req, res, next) => {
       res.send({ token });
     })
     .catch(() => {
-      next(new UnAuthorizedErr('Неверный email или пароль'));
+      next(new UnAuthorizedErr(UnAuthorizedErrMessage));
     });
 };

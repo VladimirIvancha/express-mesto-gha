@@ -6,6 +6,9 @@ const ForbiddenErr = require('../errors/ForbiddenErr');
 const {
   ok,
   created,
+  BadReqErrMessage,
+  NotFoundCardErrMessage,
+  ForbiddenErrMessage,
 } = require('../constants/errorstatuses');
 
 module.exports.getCards = (req, res, next) => {
@@ -21,7 +24,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.status(created).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
@@ -30,10 +33,10 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail(new NotFoundError('Карточка не найдена'))
+    .orFail(new NotFoundError(NotFoundCardErrMessage))
     .then((card) => {
       if (`${card.owner}` !== req.user._id) {
-        next(new ForbiddenErr('Нельзя удалять карточки других'));
+        next(new ForbiddenErr(ForbiddenErrMessage));
       }
       Card.findByIdAndRemove(req.params.cardId)
         .then(() => {
@@ -42,7 +45,7 @@ module.exports.deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
@@ -55,13 +58,13 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new NotFoundError('Карточка не найдена'))
+    .orFail(new NotFoundError(NotFoundCardErrMessage))
     .then((card) => {
       res.status(ok).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
@@ -74,13 +77,13 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new NotFoundError('Карточка не найдена'))
+    .orFail(new NotFoundError(NotFoundCardErrMessage))
     .then((card) => {
       res.status(ok).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestErr('Переданы некорректные данные'));
+        next(new BadRequestErr(BadReqErrMessage));
         return;
       }
       next(err);
