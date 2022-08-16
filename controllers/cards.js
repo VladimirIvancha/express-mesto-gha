@@ -8,7 +8,6 @@ const {
   created,
   BadReqErrMessage,
   NotFoundCardErrMessage,
-  ForbiddenErrMessage,
 } = require('../constants/errorstatuses');
 
 module.exports.getCards = (req, res, next) => {
@@ -36,7 +35,7 @@ module.exports.deleteCard = (req, res, next) => {
     .orFail(new NotFoundError(NotFoundCardErrMessage))
     .then((card) => {
       if (`${card.owner}` !== req.user._id) {
-        next(new ForbiddenErr(ForbiddenErrMessage));
+        next(new ForbiddenErr('Нельзя удалять карточки других пользователей'));
       }
       Card.findByIdAndRemove(req.params.cardId)
         .then(() => {
